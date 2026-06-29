@@ -1,0 +1,107 @@
+STUDENT RECORD MANAGEMENT SYSTEM
+AUTHOR DETAILS
+Name: Nakimuli Stella
+
+Institution: Makerere University
+
+Development Environment: VS Code, Python 3.14, Windows (OneDrive/Local File System)
+
+1. PROGRAM DESIGN & STORAGE ARCHITECTURE
+The Student Record Management System is designed as a hybrid data storage application that cleanly decouples primary, high-performance registration identities from secondary, flexible metadata attributes.
+
+Data Storage Architecture
+Instead of utilizing a complex database server, the application concurrently synchronizes data across two separate lightweight storage formats:
+
+Relational Storage (students.csv): Acts as the primary index directory. It stores the foundational, static attributes of a student: the Registration Number and the Full Name. The Registration Number serves as the primary unique key constraint.
+
+Schema-less Object Storage (students.json): Tracks extended, unstructured profile information specific to each student (e.g., residential address, contact number, and academic program). This information is nested as key-value pairs directly mapped to the student’s registration number.
+
+Application Layout
+The execution follows a strict menu-driven Command Line Interface (CLI) loop. When launched, the application verifies the operational environment, creates required storage files if they are missing, and runs an unbroken interaction loop until the user explicitly signals a shutdown command.
+
+2. SYSTEM WORKFLOW & KEY FUNCTIONS
+The system’s core logical workflows are divided into helper routines and primary CRUD (Create, Read, Update, Delete) data operations.
+
+Core Helper Functions
+initialize_files(): Runs automatically on application startup. It guarantees data persistence by detecting file paths and safely writing default system structures (CSV headers and empty JSON braces) without overwriting pre-existing records.
+
+load_csv_records() / save_csv_records(): Manages stream pipelines to disk for tabular rows.
+
+load_json_records() / save_json_records(): Handles parsing and formatting tasks for object serialization.
+
+validate_reg_no(reg_no): Uses Regular Expressions (re) to enforce system-wide alphanumeric validation patterns, preventing corrupt index entries.
+
+Primary Operational Functions
+add_student(): Requests user input, runs character validations, and cross-checks current indexes to prevent duplicate records. If valid, it writes the core identifiers to the CSV file and appends extended details to the JSON registry.
+
+view_all_students(): Reads records from both files and joins them in real-time in memory using the unique Registration Number, outputting a cleanly aligned data view.
+
+search_student(): Filters the dataset for a matching registration identity. If the record does not exist, it intentionally drops out of standard execution to trigger the custom exception handler.
+
+update_student(): Allows modifying dynamic properties. Pressing Enter without input skips changes, preserving the existing state of that specific data field.
+
+delete_student(): Removes a student's data from both files after a confirmation prompt.
+
+3. EXCEPTION HANDLING STRATEGY
+Robustness is achieved by pairing traditional exception traps with custom errors to handle specific application logic rules.
+
+Custom Exception Module
+The application defines a custom exception called StudentNotFoundError. Unlike native Python exceptions (like ValueError or KeyError), this custom error is built specifically to handle business logic misses—such as when a user requests an update, search, or deletion for a registration code that does not exist in the files.
+
+Error Trapping Paradigm
+Every major module utilizes structured try...except...finally structural pipelines:
+
+try: Wraps dangerous external file stream actions, disk manipulations, and user input parsers.
+
+except StudentNotFoundError: Catches missing record attempts explicitly, logs the warning, and alerts the user cleanly without halting execution.
+
+except Exception: Captures unhandled operating system or hardware exceptions, writing detailed stack traces to the logs while preventing app crashes.
+
+finally: Executes a concluding block at the end of operations (e.g., confirming the process routine is complete), ensuring temporary memory buffers clear properly regardless of whether errors occurred.
+
+4. LOGGING & AUDIT MECHANISMS
+The system records all operations in a dedicated audit file named student_system.log. This happens automatically behind the scenes using Python's built-in logging library.
+
+Each log entry records three key pieces of information:
+
+A precise timestamp showing when the event occurred.
+
+The severity level of the event (INFO for normal actions, WARNING for user errors, and CRITICAL/ERROR for system faults).
+
+A descriptive text message detailing the exact action or error.
+
+Logged Events Include:
+System Start/Stop: Tracks whenever the system starts running or shuts down cleanly.
+
+User Actions: Logs when a new student is successfully added, updated, searched, or deleted.
+
+Security & Input Warnings: Logs failed actions, such as entering an invalid option or trying to access a registration number that doesn't exist.
+
+5. SYSTEM TESTING RESULTS
+Test Scenario 1: Cold Boot File Initialization
+Input Condition: students.csv and students.json are absent from the folder.
+
+Observed Execution: The program created both files with valid headers and structural brackets instantly upon running.
+
+Result Status: PASS
+
+Test Scenario 2: Identity Duplication Enforcement
+Input Condition: Attempting to add a new student with a Registration Number that already exists in the system.
+
+Observed Execution: System rejected the input, displayed an error message to the terminal, and successfully wrote a warning entry to the log file.
+
+Result Status: PASS
+
+Test Scenario 3: Non-existent Record Exception Trap
+Input Condition: Searching for an invalid or non-existent student ID.
+
+Observed Execution: The application raised the custom StudentNotFoundError, intercepted it safely in the except block, print-notified the user, and resumed the main menu loop without breaking down.
+
+Result Status: PASS
+
+Test Scenario 4: Concurrent File Synchronization
+Input Condition: Deleting an active student record.
+
+Observed Execution: The entry was completely removed from students.csv and its accompanying metadata block was deleted from students.json simultaneously.
+
+Result Status: PASS
